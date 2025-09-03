@@ -134,7 +134,7 @@ def main(page: ft.Page):
     time_input_dizhi = ft.Dropdown(
         label="时辰",
         options=[ft.dropdown.Option(d) for d in DIZHI12],
-        on_change=lambda x : state.update({'time':x}),
+        on_change=lambda x : state.update({'time':x.data}),
         visible=False,
         width=200
     )
@@ -150,7 +150,7 @@ def main(page: ft.Page):
                 value='notuselunar'
             )
         ],width=400),
-        on_change= lambda x: state.update({'uselunar':True if x == 'uselunar' else False}),
+        on_change= lambda x: state.update({'uselunar': (True if x.data == 'uselunar' else False)}),
         visible=True,
         value='uselunar'
     )
@@ -177,66 +177,88 @@ def main(page: ft.Page):
     #     width=200
     # )
     
-    RESULT_LITTEL_TEXT_SIZE = 10
-    RESULT_TEXT_SIZE = 50
-    RESULT_SYMBOL_SIZE = 400
-    RESULT_SYMBOL_HIGHT = 300
-    RESULT_TEXT_HIGHT = 50
-    # 结果显示部分
+    RESULT_TEXT_SIZE = 30
+    RESULT_RELEATION_SIZE = 20
+    RESULT_LITTEL_TEXT_STYLE = ft.TextStyle(size=10)
+    RESULT_SYMBOL_STYLE = ft.TextStyle(size=50,height=0.72)
+    
     # 本卦
-    bengua_text = ft.TextSpan(style=ft.TextStyle(size=RESULT_TEXT_SIZE))
-    bengua_upper = ft.TextSpan(style=ft.TextStyle(size=RESULT_SYMBOL_SIZE))
-    bengua_upper_name = ft.TextSpan(style=ft.TextStyle(size=RESULT_LITTEL_TEXT_SIZE))
-    bengua_lower = ft.TextSpan(style=ft.TextStyle(size=RESULT_SYMBOL_SIZE))
-    bengua_lower_name = ft.TextSpan(style=ft.TextStyle(size=RESULT_LITTEL_TEXT_SIZE))
+    bengua_text = ft.Text(style=ft.TextStyle(size=RESULT_TEXT_SIZE))
     
-    # bengua_upper = ft.Text(size=RESULT_SYMBOL_SIZE)
-    # bengua_upper_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    # bengua_lower = ft.Text(size=RESULT_SYMBOL_SIZE)
-    # bengua_lower_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    # bengua_symbol = ft.Text(size=RESULT_SYMBOL_SIZE)
+    bengua_upper = ft.TextSpan() # 在text中设置
+    bengua_lower = ft.TextSpan()
+    bengua_upper_name = ft.TextSpan(style=RESULT_LITTEL_TEXT_STYLE)
+    bengua_lower_name = ft.TextSpan(style=RESULT_LITTEL_TEXT_STYLE)
     
-    # 互卦
-    hugua_text = ft.Text(size=RESULT_TEXT_SIZE)
-    hugua_upper = ft.Text(size=RESULT_SYMBOL_SIZE)
-    hugua_upper_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    hugua_lower = ft.Text(size=RESULT_SYMBOL_SIZE)
-    hugua_lower_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    # hugua_symbol = ft.Text(size=RESULT_SYMBOL_SIZE)
+    bengua_symbol = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Text(spans=[bengua_upper_name,bengua_upper,],style=RESULT_SYMBOL_STYLE),
+                ft.Text(spans=[bengua_lower_name,bengua_lower,],style=RESULT_SYMBOL_STYLE),
+            ],spacing=0,expand=0
+        ),padding=0,margin=0
+    )
     
-    # 变卦
-    biangua_text = ft.Text(size=RESULT_TEXT_SIZE)
-    biangua_upper = ft.Text(size=RESULT_SYMBOL_SIZE)
-    biangua_upper_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    biangua_lower = ft.Text(size=RESULT_SYMBOL_SIZE)
-    biangua_lower_name = ft.Text(size=RESULT_LITTEL_TEXT_SIZE)
-    # biangua_symbol = ft.Text(size=RESULT_SYMBOL_SIZE)
+    bengua_element_releation = ft.Text(style=ft.TextStyle(size=RESULT_RELEATION_SIZE))
+    bengua_all = ft.Card(content=ft.Column(
+        controls=[
+            bengua_text,
+            bengua_symbol,
+            bengua_element_releation
+        ],
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        col=4
+    ))
+    
+    NATURE_COLOR = {
+        '金':'yellow',
+        '木':'green',
+        '水':'blue',
+        '火':'red',
+        '土':'brown'
+    }
     
     def calculator(data,localvar):
         meihuaobj = MeiHuaCalc(**state)
         res = meihuaobj.calclator()
         gua_obj_dict = {
             'bengua':res.self_gua,
-            'hugua':res.hugua,
-            'biangua':res.biangua
+            # 'hugua':res.hugua,
+            # 'biangua':res.biangua
         }
         for one_gua in gua_obj_dict.keys():
             obj = gua_obj_dict[one_gua]
             # 设置64卦名
-            setattr(localvar[f"{one_gua}_text"],'value',getattr(obj,'name'))
+            gua_name = localvar[f"{one_gua}_text"]
+            # gua_name.padding = ft.padding.all(0)
+            setattr(gua_name,'value',getattr(obj,'name'))
             # obj_upper = getattr(obj,'upper')
             # obj_lower = getattr(obj,'lower')
+            # 设置体用相互关系
+            element = localvar[f"{one_gua}_element_releation"]
+            setattr(element,'value',getattr(res,'element_relation'))
             for one_part_str in ['upper','lower']:
                 one_part = getattr(obj,one_part_str)
                 # 设置8卦符号
-                setattr(localvar[f"{one_gua}_{one_part_str}"],"value",getattr(one_part,'symbol'))
+                onegua_part = localvar[f"{one_gua}_{one_part_str}"]
+                # onegua_part.padding = ft.padding.all(0)
+                setattr(onegua_part,"text",getattr(one_part,'symbol'))
+                # 设置颜色
+                setattr(onegua_part,'style',ft.TextStyle(color=NATURE_COLOR[one_part.nature]))
                 # 设置8卦名称(属性)
+                onegua_part_name = localvar[f"{one_gua}_{one_part_str}_name"]
+                # onegua_part_name.padding = ft.padding.all(0)
                 setattr(
-                    localvar[f"{one_gua}_{one_part_str}_name"],"value",
+                    onegua_part_name,"text",
                     f"{getattr(one_part,'name')}({getattr(one_part,'attribute')})"
                 )
+                # 设置颜色
+                setattr(
+                    getattr(onegua_part_name,'style'),'color',
+                    NATURE_COLOR[one_part.nature]
+                )
         
-        
+        # localvar[f"bengua_symbol"].value = res.self_gua.symbol
         result_container.value = str(res)
         result_container.visible = True
         result_container.update()
@@ -250,136 +272,9 @@ def main(page: ft.Page):
     )
     
     # 结果显示区域
-    result_container = ft.Row([
-        ft.Card(
-            content=ft.Text(
-                spans=[
-                    ft.TextSpan(spans=[bengua_text,]),
-                    ft.TextSpan(spans=[
-                            bengua_upper_name,
-                            bengua_upper
-                        ]),
-                    ft.TextSpan(spans=[
-                        bengua_lower_name,
-                        bengua_lower    
-                    ]),
-                ],
-                disabled=False
-            ),margin=0
-        ),
-        ft.Card(
-            content=ft.Column(
-                [
-                    hugua_text,
-                    ft.Row([
-                        hugua_upper_name,
-                        hugua_upper
-                    ],height=RESULT_SYMBOL_HIGHT,spacing=0),
-                    ft.Row([
-                        hugua_lower_name,
-                        hugua_lower
-                    ],height=RESULT_SYMBOL_HIGHT,spacing=0)
-                ],
-                width=400,
-                spacing=0,
-                tight=True,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER
-            ),margin=0
-        ),
-        ft.Card(
-            content=ft.Column(
-                [
-                    biangua_text,
-                    ft.Row([
-                        biangua_upper_name,
-                        biangua_upper
-                    ],height=RESULT_SYMBOL_HIGHT),
-                    ft.Row([
-                        biangua_lower_name,
-                        biangua_lower
-                    ],height=RESULT_SYMBOL_HIGHT)
-                ],
-                width=400,
-                spacing=0,
-                tight=True,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER
-            ),margin=0
-        )
+    result_container = ft.ResponsiveRow([
+        bengua_all,
     ],width=1200)
-    
-    
-    # def on_calculate(e):
-    #     state.calculate(e)
-    #     if state.show_result:
-    #         # 清空之前的结果
-    #         result_container.controls.clear()
-            
-    #         # 添加新结果
-    #         result_container.controls.append(
-    #             ft.Text("排盘结果", size=24, weight=ft.FontWeight.BOLD)
-    #         )
-            
-    #         # 本卦显示
-    #         result_container.controls.append(
-    #             render_hexagram_display(
-    #                 state.result["original_hexagram"],
-    #                 f"本卦 (第{state.result['moving_yao']}爻动)"
-    #             )
-    #         )
-            
-    #         # 互卦显示
-    #         result_container.controls.append(
-    #             render_hexagram_display(
-    #                 state.result["mutual_hexagram"],
-    #                 "互卦"
-    #             )
-    #         )
-            
-    #         # 变卦显示
-    #         result_container.controls.append(
-    #             render_hexagram_display(
-    #                 state.result["changed_hexagram"],
-    #                 "变卦"
-    #             )
-    #         )
-            
-    #         # 体用关系
-    #         result_container.controls.append(
-    #             ft.Container(
-    #                 content=ft.Column([
-    #                     ft.Text("体用关系", size=20, weight=ft.FontWeight.BOLD),
-    #                     ft.Row([
-    #                         ft.Column([
-    #                             ft.Text("体卦", weight=ft.FontWeight.BOLD),
-    #                             ft.Text(state.result["body_use"]["body"]["name"]),
-    #                             ft.Text(f"({state.result['body_use']['body']['attribute']})"),
-    #                         ], spacing=5),
-    #                         ft.Column([
-    #                             ft.Text("用卦", weight=ft.FontWeight.BOLD),
-    #                             ft.Text(state.result["body_use"]["use"]["name"]),
-    #                             ft.Text(f"({state.result['body_use']['use']['attribute']})"),
-    #                         ], spacing=5),
-    #                     ], spacing=20),
-    #                     ft.Text(
-    #                         f"关系: {state.result['body_use']['relation']}",
-    #                         weight=ft.FontWeight.BOLD,
-    #                         color=ft.colors.GREEN if "生" in state.result["body_use"]["relation"] or "和" in state.result["body_use"]["relation"] else ft.colors.RED
-    #                     )
-    #                 ], spacing=10),
-    #                 padding=15,
-    #                 border=ft.border.all(1, "#eaeaea"),
-    #                 border_radius=10,
-    #                 width=page.width - 40
-    #             )
-    #         )
-            
-    #         result_container.visible = True
-    #     else:
-    #         result_container.visible = False
-        
-    #     page.update()
-    
-    # calculate_btn.on_click = state.calclator()
     
     # 时间类型选择容器
     time_type_container = ft.Column([

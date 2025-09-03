@@ -151,6 +151,9 @@ class Gua64():
     self_gua = _Gua64
     hugua:_Gua64
     biangua:_Gua64
+    change_gua_index:int
+    element_relation_index:int
+    element_relation:str
     
     def __init__(self,upper_index,lower_index,change_index):
         self.self_gua = _Gua64(
@@ -160,11 +163,13 @@ class Gua64():
         self.__get_hu_gua()
         if change_index:
             self.set_change_gua(change_index)
+            self.__check_element_kill()
     
     def set_change_gua(self,change_index):
         change_gua = None
         if change_index > 3: change_gua = "upper"
         else: change_gua = 'lower'
+        self.change_gua_index  = change_index
         
         change_gua_obj = getattr(self.self_gua,change_gua)
         change_gua_bin = change_gua_obj.change_index(change_index if change_gua=='lower' else change_index-3 )
@@ -178,6 +183,34 @@ class Gua64():
                 Gua(**self.self_gua.upper.__dict__),
                 BAGUA[Gua.bin2hexgram(change_gua_bin)-1],
             )
+        # self.__check_element_kill()
+            
+    def __check_element_kill(self):
+        lower_nature = self.self_gua.lower.nature
+        upper_nature = self.self_gua.upper.nature
+        change_yao_index = self.change_gua_index
+        
+        body_nature = lower_nature if change_yao_index <= 3 else upper_nature
+        use_nature = upper_nature if change_yao_index <= 3 else lower_nature
+        
+        five_element_kill = '金木土水火'
+        body_element = five_element_kill.index(body_nature) 
+        use_element = five_element_kill.index(use_nature)
+        
+        value = body_element - use_element
+        if value < 0:
+            value = value + 5
+        
+        element_relation_dict = {
+            0: '体用相和',
+            1: '用克体',
+            2: '体生用',
+            3: '用生体',
+            4: '体克用',
+        }
+        self.element_relation_index = value
+        self.element_relation = element_relation_dict[value]
+        return self.element_relation
             
     def __get_hu_gua(self):
         hu_upper = self.self_gua.binary_str[1:4]

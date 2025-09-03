@@ -32,6 +32,9 @@ class MeiHuaCalc():
     # upper hexgram index (从1计数)
     upper_index:int = -1
     
+    # tiyong
+    
+    
     def __init__(self,*args, **kwargs):
         arg_keys = kwargs.keys()
         if 'date' in arg_keys: 
@@ -126,6 +129,7 @@ class MeiHuaCalc():
     def __upper_hexgram_init__(self,upper_hexgram:str):
         self.upper_index = bagua.Gua.index(upper_hexgram)
         
+    
     def calclator(self):
         if self.calc_type == -1:
             raise ValueError(f"计算方式未成功设置")
@@ -146,8 +150,9 @@ class MeiHuaCalc():
             lower = (date_sum + self.time) % 8 or 8
             changer = (date_sum + self.time) % 6 or 6
             self.self_gua = bagua.Gua64(upper,lower,changer)
-            return self.self_gua
 
+        # self.__check_element_kill()
+        return self.self_gua
 
 
 # class MeiHuaState:
@@ -332,25 +337,9 @@ class MeiHuaCalc():
 #         change_upper_trigram = bin2hexgram(change_trigram_bin[0:3])['value']
 #         change_lower_trigram = bin2hexgram(change_trigram_bin[3:6])['value']
         
-#         body_trigram = lower_trigram if moving_yao <= 3 else upper_trigram
-#         use_trigram = upper_trigram if moving_yao <= 3 else lower_trigram
+
         
-#         five_element_kill = '金木土水火'
-#         body_element = five_element_kill.index(body_trigram["nature"]) 
-#         use_element = five_element_kill.index(use_trigram["nature"]) 
-        
-#         value = body_element - use_element
-#         if value < 0:
-#             value = value + 5
-        
-#         element_relation_dict = {
-#             0: '体用相和',
-#             1: '用克体',
-#             2: '体生用',
-#             3: '用生体',
-#             4: '体克用',
-#         }
-#         element_relation = element_relation_dict[value]
+
         
 #         self.result = {
 #             "original_hexagram": {
