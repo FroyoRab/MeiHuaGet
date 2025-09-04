@@ -26,6 +26,10 @@ def main(page: ft.Page):
     def input_select(select:ft.ControlEvent):
         select_input_dict = {
             'datetime':[lunar_date_input,time_type_container,select_date_show,is_use_lunar_datetime,isgive_luan_date],
+            'random_number':[random_numbers_input,],
+            'number_with_time':[],
+            'chinese_chars':[],
+            'upper_hexgram_with_time':[]
         }
         select_time_type = {
             '24':[time_input_24,],
@@ -33,15 +37,17 @@ def main(page: ft.Page):
         }
         dicts = [select_input_dict,select_time_type]
         
-        use_dict = [x for x in dicts if select.data in x][0] = [x for x in dicts if select.data in x][0]
+        use_dict = [x for x in dicts if select.data in x][0]
         if select.data in use_dict:
             for one in use_dict.keys():
                 if one == select.data:
                     for one_element in use_dict[one]:
                         one_element.visible = True
+                        state.clear()
                 else:
                     for one_element in use_dict[one]:
                         one_element.visible = False
+                        state.clear()
         page.update()
         
     # 输入控件
@@ -51,6 +57,15 @@ def main(page: ft.Page):
         on_change=input_select,
         value='datetime',
         width=400
+    )
+    
+    def number_input(data:ft.ControlEvent):
+        state.update({
+            'number':data.value
+        })
+        
+    random_numbers_input = ft.TextField(
+        on_change=number_input
     )
     
     def date_select(date:ft.ControlEvent):
@@ -155,6 +170,8 @@ def main(page: ft.Page):
         value='uselunar'
     )
     
+    
+    
     NATURE_COLOR = {
         '金':ft.Colors.YELLOW_700,
         '木':ft.Colors.GREEN,
@@ -170,7 +187,9 @@ def main(page: ft.Page):
         add_dict = {
             '原文':'origin',
             '卦辞白话文':'write_origin',
-            '邵雍解':'shaoyong'
+            '邵雍解':'shaoyong',
+            '梅花易一姐注':'yijie'
+            # '更多':'all'
         }
         index_dict = {
             '卦辞':0,
@@ -185,7 +204,7 @@ def main(page: ft.Page):
                 ft.Text(value=one_index,theme_style=ft.TextThemeStyle.TITLE_LARGE),
             )
             for one_add in add_dict:
-                # 小标题，区分原文、译文、邵雍
+                # 小标题，区分原文、译文、邵雍、一姐
                 column_element.controls.append(
                     ft.Text(value=one_add,theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
                 )
@@ -193,19 +212,34 @@ def main(page: ft.Page):
                     column_element.controls.append(
                         ft.Text(value=mean[index_dict[one_index]][add_dict[one_add]][0],theme_style=ft.TextThemeStyle.BODY_SMALL),
                     )
-                except IndexError as e:
-                    column_element.controls.append(
-                        ft.Text(value="/",theme_style=ft.TextThemeStyle.BODY_SMALL),
-                    )
-                
+                except LookupError as e:
+                    column_element.controls.pop()
+                    # column_element.controls.append(
+                    #     ft.Text(value="/",theme_style=ft.TextThemeStyle.BODY_SMALL),
+                    # )
+            column_element.controls.append(
+                ft.ExpansionTile(
+                    title=ft.Text(f'{one_index}更多'),
+                    controls=[
+                        # ft.Text(one_index,theme_style=ft.TextThemeStyle.TITLE_SMALL),
+                        ft.Text(value=mean[index_dict[one_index]]['all'],theme_style=ft.TextThemeStyle.LABEL_SMALL),
+                    ],
+                    expanded_cross_axis_alignment=ft.CrossAxisAlignment.START
+                )
+            )
+    
+        like = ft.Card(
+            content=ft.Text(value=f"{MeiHuaCalc.get_like(bin_str=gua_bin_str[:3][::-1])}\n{MeiHuaCalc.get_like(bin_str=gua_bin_str[3:][::-1])}",theme_style=ft.TextThemeStyle.BODY_MEDIUM)
+        )
         info = ft.Card(
             content=ft.Container(content=column_element)
         )
-        result_mean_container.controls=[info,]
+        
+        result_mean_container.controls=[like,info]
         result_mean_container.visible = True
         result_mean_container.update()
     
-    def calculator(data,localvar):
+    def calculator(data):
         
         # RESULT_RELEATION_SIZE = 20
         # RESULT_LITTEL_TEXT_STYLE = ft.TextStyle(size=10)
@@ -242,6 +276,8 @@ def main(page: ft.Page):
                 part[one_part_str]['symbol'] = one_part.symbol
                 part[one_part_str]['color'] = NATURE_COLOR[one_part.nature]
                 part[one_part_str]['name'] = f"{one_part.name}({one_part.attribute})"
+                part[one_part_str]['decline_direction'] = f"{one_part.decline},{one_part.direction}"
+                # part[one_part_str]['direction'] = one_part.direction
             
             upper = part['upper']
             lower = part['lower']
@@ -250,14 +286,16 @@ def main(page: ft.Page):
                     controls=[
                         ft.Text(spans=[
                             ft.TextSpan(spans=[ # 统一颜色
-                            ft.TextSpan(text=upper['name'],style=ft.TextStyle(size=result_partname_size)),                                              # bengua_upper_name,
+                            ft.TextSpan(text=upper['name'],style=ft.TextStyle(size=result_partname_size)),                    # bengua_upper_name,
                             ft.TextSpan(text=upper['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_upper
+                            ft.TextSpan(text=upper['decline_direction'],style=ft.TextStyle(size=result_partname_size)),                    # bengua_upper_name,
                             ],style=ft.TextStyle(color=upper['color'])),
                         ]),
                         ft.Text(spans=[
                             ft.TextSpan(spans=[ # 统一颜色故增加外包span
                             ft.TextSpan(text=lower['name'],style=ft.TextStyle(size=result_partname_size)),                                          #bengua_lower_name,
                             ft.TextSpan(text=lower['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_lower
+                            ft.TextSpan(text=lower['decline_direction'],style=ft.TextStyle(size=result_partname_size)),                                          #bengua_lower_name,
                             ],style=ft.TextStyle(color=lower['color'])),
                         ]),
                     ],spacing=0,expand=0
@@ -287,10 +325,10 @@ def main(page: ft.Page):
         result_container.visible = True
         result_container.update()
         
-    local_vars = locals()
+    # local_vars = locals()
     calculate_btn = ft.ElevatedButton(
         "排盘",
-        on_click=lambda x:calculator(x,local_vars),
+        on_click=calculator,
         width=400,
         height=50
     )
@@ -320,7 +358,7 @@ def main(page: ft.Page):
             isgive_luan_date,
             input_method_dd,
             lunar_date_input,
-            # random_numbers_input,
+            random_numbers_input,
             # chinese_chars_input,
             # ft.Row([upper_trigram_dd], visible=False),
             time_type_container,

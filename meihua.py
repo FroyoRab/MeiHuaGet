@@ -113,6 +113,9 @@ class MeiHuaCalc():
                     return
                 else: raise ValueError(f'给到的不是地支{time}')
             # 其他进行分割取小时
+            if time in DIZHI12:
+                self.time = DIZHI12.index(time)+1
+                return
             if ":" in time :
                 time = time.split(":")[0]
             if time.isalnum():
@@ -131,7 +134,24 @@ class MeiHuaCalc():
         
     def __upper_hexgram_init__(self,upper_hexgram:str):
         self.upper_index = bagua.Gua.index(upper_hexgram)
-        
+    
+    @staticmethod
+    def get_like(index:int=None,bin_str:str=None):
+        like_dict = [
+            "乾: 天、父、老人、官贵、头、骨、马、金宝、珠玉、水果、圆物、冠、镜、刚物、大赤色、水寒。",
+            "兑：泽、少女、巫、舌、妾、肺、羊、毁折之物、带口之器、属金者、废缺之物、奴仆、婢。",
+            "离：火、雉、日、目、电、霓霞、中女、甲胄、戈兵、文书、槁木、炉、兽、鳄龟蟹蚌、凡有壳之物、红赤紫色、花纹人、干燥物。",
+            "震：雷、长男、足、发、龙、百虫、蹄、竹、萑苇、马鸣、馵足、的颡、稼、乐器之类、草木、青碧绿色、树、木核、柴、蛇。",
+            "巽：风、长女、僧尼、鸡、股、百禽、百草、臼、香气、臭、绳、眼、羽毛、帆、扇、枝叶之类、仙道工匠、直物、工巧之器。",
+            "坎：水、雨、雪、工、豕、中男、沟渎、弓轮、耳、血、月、盗、宫律、栋、丛棘、狐、蒺藜、桎梏、水族、鱼、盐、酒、醢、有核之物、黑色。",
+            "艮：山、土、少男、童子、狗、手指、径路、门阙、果、蓏、阍寺、鼠、虎、狐、黔喙之属、木生之物、藤生之物、爪、鼻,黄色。",
+            "坤：地、母、老妇、土、牛、金、布帛、文章、舆辇、方物、柄、黄色、瓦器、腹、裳、黑色、黍稷、书、米、谷。",
+        ]
+        index_like_dict = {}
+        if bin_str:
+            index_like_dict = {x['bin_str']:like_dict[index] for index,x in enumerate(bagua.EIGHT_TRIGRAMS)}
+            return index_like_dict[bin_str]
+        else: return like_dict[index]
     
     def calclator(self):
         if self.calc_type == -1:

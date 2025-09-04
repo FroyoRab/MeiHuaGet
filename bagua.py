@@ -3,14 +3,14 @@ import json
 
 # 八卦定义
 EIGHT_TRIGRAMS = [
-    {"index":1, "name": "乾", "symbol": "☰", "nature": "金", "direction": "西北", "attribute": "天", "bin_str": '111'},
-    {"index":2, "name": "兑", "symbol": "☱", "nature": "金", "direction": "西", "attribute": "泽", "bin_str": '110'},
-    {"index":3, "name": "离", "symbol": "☲", "nature": "火", "direction": "南", "attribute": "火", "bin_str": '101'},
-    {"index":4, "name": "震", "symbol": "☳", "nature": "木", "direction": "东", "attribute": "雷", "bin_str": '100'},
-    {"index":5, "name": "巽", "symbol": "☴", "nature": "木", "direction": "东南", "attribute": "风", "bin_str": '011'},
-    {"index":6, "name": "坎", "symbol": "☵", "nature": "水", "direction": "北", "attribute": "水", "bin_str": '010'},
-    {"index":7, "name": "艮", "symbol": "☶", "nature": "土", "direction": "东北", "attribute": "山", "bin_str": '001'},
-    {"index":8, "name": "坤", "symbol": "☷", "nature": "土", "direction": "西南", "attribute": "地", "bin_str": '000'},
+    {"index":1, "name": "乾", "symbol": "☰", "nature": "金", "direction": "西北", "attribute": "天", "bin_str": '111','decline':'秋旺夏衰'},
+    {"index":2, "name": "兑", "symbol": "☱", "nature": "金", "direction": "西", "attribute": "泽", "bin_str": '110','decline':'秋旺夏衰'},
+    {"index":3, "name": "离", "symbol": "☲", "nature": "火", "direction": "南", "attribute": "火", "bin_str": '101','decline':'夏旺冬衰'},
+    {"index":4, "name": "震", "symbol": "☳", "nature": "木", "direction": "东", "attribute": "雷", "bin_str": '100','decline':'春旺秋衰'},
+    {"index":5, "name": "巽", "symbol": "☴", "nature": "木", "direction": "东南", "attribute": "风", "bin_str": '011','decline':'春旺秋衰'},
+    {"index":6, "name": "坎", "symbol": "☵", "nature": "水", "direction": "北", "attribute": "水", "bin_str": '010','decline':'冬旺[辰戌丑未]衰'},
+    {"index":7, "name": "艮", "symbol": "☶", "nature": "土", "direction": "东北", "attribute": "山", "bin_str": '001','decline':'[辰戌丑未]旺春衰'},
+    {"index":8, "name": "坤", "symbol": "☷", "nature": "土", "direction": "西南", "attribute": "地", "bin_str": '000','decline':'[辰戌丑未]旺春衰'},
 ]
 
 ALL64GUA = {
@@ -101,6 +101,7 @@ class Gua():
     direction = ""
     bin_str = ""
     attribute = ""
+    decline = ""
     # class _calc():
     #     bagua_bin = ""
     #     calc_index = -1
