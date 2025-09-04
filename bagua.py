@@ -1,4 +1,5 @@
 import copy
+import json
 
 # 八卦定义
 EIGHT_TRIGRAMS = [
@@ -78,6 +79,16 @@ ALL64GUA = {
     "111110":{"name":"天风姤","symbol":"䷫"},
     "111111":{"name":"乾为天","symbol":"䷀"}
 }
+
+GUA_MEAN = {}
+
+# 64卦卦义
+# from zhouyi.cc
+with open('64gua_mean_.json','r',encoding='utf8') as files:
+    GUA_MEAN = json.loads(files.read())
+        
+# with open('./64gua_mean_.json','w',encoding='utf-8') as files: 
+#     files.write(json.dumps(ALL64GUA_DATA,indent=4,ensure_ascii=False))
 
 # [{x:f"\u4DC{index}".encode('utf-8')} for index,x in enumerate(ALL64GUA.keys())]
 

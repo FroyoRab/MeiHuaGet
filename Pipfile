@@ -6,6 +6,9 @@ name = "pip_conf_index_global"
 [packages]
 zhdate = "*"
 flet = {extras = ["all"], version = "*"}
+beautifulsoup4 = "*"
+lxml = "*"
+requests-cache = "*"
 
 [dev-packages]
 

@@ -4,7 +4,7 @@ import re
 from zhdate import ZhDate
 from datetime import datetime
 from meihua import MeiHuaCalc,DIZHI12
-from bagua import BAGUA
+from bagua import BAGUA,GUA_MEAN
 import functools
 
 # 可选输入项
@@ -163,6 +163,48 @@ def main(page: ft.Page):
         '土':ft.Colors.BROWN
     }
     
+    def select_gua(data:ft.ControlEvent):
+        # show gua info on result_mean_container
+        gua_bin_str,change_gua_index = data.control.key
+        mean = GUA_MEAN[gua_bin_str]['mean']
+        add_dict = {
+            '原文':'origin',
+            '卦辞白话文':'write_origin',
+            '邵雍解':'shaoyong'
+        }
+        index_dict = {
+            '卦辞':0,
+            '爻辞':change_gua_index
+        }
+        
+        column_element = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.START)
+        
+        for one_index in index_dict:
+            # 大标题，区分卦辞爻辞
+            column_element.controls.append(
+                ft.Text(value=one_index,theme_style=ft.TextThemeStyle.TITLE_LARGE),
+            )
+            for one_add in add_dict:
+                # 小标题，区分原文、译文、邵雍
+                column_element.controls.append(
+                    ft.Text(value=one_add,theme_style=ft.TextThemeStyle.TITLE_MEDIUM),
+                )
+                try:
+                    column_element.controls.append(
+                        ft.Text(value=mean[index_dict[one_index]][add_dict[one_add]][0],theme_style=ft.TextThemeStyle.BODY_SMALL),
+                    )
+                except IndexError as e:
+                    column_element.controls.append(
+                        ft.Text(value="/",theme_style=ft.TextThemeStyle.BODY_SMALL),
+                    )
+                
+        info = ft.Card(
+            content=ft.Container(content=column_element)
+        )
+        result_mean_container.controls=[info,]
+        result_mean_container.visible = True
+        result_mean_container.update()
+    
     def calculator(data,localvar):
         
         # RESULT_RELEATION_SIZE = 20
@@ -209,26 +251,32 @@ def main(page: ft.Page):
                         ft.Text(spans=[
                             ft.TextSpan(spans=[ # 统一颜色
                             ft.TextSpan(text=upper['name'],style=ft.TextStyle(size=result_partname_size)),                                              # bengua_upper_name,
-                                ft.TextSpan(text=upper['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_upper
+                            ft.TextSpan(text=upper['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_upper
                             ],style=ft.TextStyle(color=upper['color'])),
                         ]),
                         ft.Text(spans=[
                             ft.TextSpan(spans=[ # 统一颜色故增加外包span
-                                ft.TextSpan(text=lower['name'],style=ft.TextStyle(size=result_partname_size)),                                          #bengua_lower_name,
-                                ft.TextSpan(text=lower['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_lower
+                            ft.TextSpan(text=lower['name'],style=ft.TextStyle(size=result_partname_size)),                                          #bengua_lower_name,
+                            ft.TextSpan(text=lower['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_lower
                             ],style=ft.TextStyle(color=lower['color'])),
                         ]),
                     ],spacing=0,expand=0
                 )
             )
-            gua_all = ft.Card(content=ft.Column(
-                controls=[
-                    ft.Text(value=f"{one_gua}:{gua_name}",size=result_64gua_name_size),
-                    gua_symbol,
-                    ft.Text(value=element_relation,size=result_releation_size)
-                ],
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            ),col={"xs": 12, "md": 8, "lg": 4})
+            gua_all = ft.Card(content=ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Text(value=f"{one_gua}:{gua_name}",size=result_64gua_name_size),
+                            gua_symbol,
+                            ft.Text(value=element_relation,size=result_releation_size)
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    on_click = select_gua,
+                    key=(obj.binary_str,res.change_gua_index)
+                ),
+                col={"xs": 12, "md": 8, "lg": 4},
+            )
             
             res_list.append(gua_all)
 
@@ -251,6 +299,11 @@ def main(page: ft.Page):
     result_container = ft.Column(
         horizontal_alignment=ft.MainAxisAlignment.CENTER
     ) 
+    
+    # 卦意显示区域
+    result_mean_container = ft.Column(
+        horizontal_alignment=ft.MainAxisAlignment.START
+    )
 
     
     # 时间类型选择容器
@@ -273,7 +326,8 @@ def main(page: ft.Page):
             time_type_container,
             is_use_lunar_datetime,
             calculate_btn,
-            result_container
+            result_container,
+            result_mean_container,
         ], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
     )
     page.update()

@@ -23,6 +23,7 @@ class MeiHuaCalc():
     year:int = -1
     month:int = -1
     day:int = -1
+    uselunar:bool
     
     # random number
     number:int = -1
@@ -71,6 +72,7 @@ class MeiHuaCalc():
             lunatime (str): 12:12 | 子丑寅卯辰巳午未申酉戌亥
         """
         self.__time_init__(time,islunardate,uselunar)
+        self.uselunar = uselunar
         if uselunar:
             lunar_date = None
             if islunardate :
@@ -90,7 +92,7 @@ class MeiHuaCalc():
             self.year = (lunar_date.lunar_year - 1996 + 36) % 12
         else:
             if type(date)==str and '-' in date:
-                self.day,self.month,self.year = date.split("-")
+                self.year,self.month,self.day = [int(x) for x in date.split("-")]
             else:ValueError(f"给到的date不是合法数值(%Y-%m-%d),或逻辑错误。")
         
     def __random_num_init__(self,num:str,useNumberValue:bool=True):
@@ -151,7 +153,10 @@ class MeiHuaCalc():
             lower = (date_sum + self.time) % 8 or 8
             changer = (date_sum + self.time) % 6 or 6
             self.self_gua = bagua.Gua64(upper,lower,changer)
-            self.calc_info = f"{TIANGAN10[self.year-1]}年({self.year})，{DIZHI12[self.month-1]}月({self.month})，{self.day}日，{DIZHI12[self.time-1]}时({self.time})\n"
+            if self.uselunar:
+                self.calc_info = f"{TIANGAN10[self.year-1]}年({self.year})，{DIZHI12[self.month-1]}月({self.month})，{self.day}日，{DIZHI12[self.time-1]}时({self.time})\n"
+            else:
+                self.calc_info = f"{self.year}年{self.month}月{self.day}日\n"
             self.calc_info += f"年月日和{date_sum}，{date_sum//8}X8 {(date_sum//8)*8}余{upper}，上卦为{bagua.EIGHT_TRIGRAMS[upper-1]['name']}\n"
             self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//8}X8 {((date_sum+self.time)//8)*8}余{lower}，下卦为{bagua.EIGHT_TRIGRAMS[lower-1]['name']}\n"
             self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//6}X6 {((date_sum+self.time)//6)*6}余{changer}，变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"

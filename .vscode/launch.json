@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python 调试程序: get_zhouyi",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "get_zhouyi_cc.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/get_zhouyi_cc/"
+        },
+        {
             "name": "Python 调试程序: flet",
             "type": "debugpy",
             "request": "launch",
