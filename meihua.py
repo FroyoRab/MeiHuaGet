@@ -3,12 +3,13 @@ from zhdate import ZhDate
 from datetime import datetime
 
 # 地支天干
-DIZHI12 = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]
-TIANGAN10 = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
+DIZHI12 = "子丑寅卯辰巳午未申酉戌亥"
+TIANGAN10 = "甲乙丙丁戊己庚辛壬癸"
 
 
 class MeiHuaCalc():
     self_gua:bagua.Gua64 = None
+    calc_info:str = ""
     
     calc_type = -1
     # 0 - datetime
@@ -150,6 +151,10 @@ class MeiHuaCalc():
             lower = (date_sum + self.time) % 8 or 8
             changer = (date_sum + self.time) % 6 or 6
             self.self_gua = bagua.Gua64(upper,lower,changer)
+            self.calc_info = f"{TIANGAN10[self.year-1]}年({self.year})，{DIZHI12[self.month-1]}月({self.month})，{self.day}日，{DIZHI12[self.time-1]}时({self.time})\n"
+            self.calc_info += f"年月日和{date_sum}，{date_sum//8}X8 {(date_sum//8)*8}余{upper}，上卦为{bagua.EIGHT_TRIGRAMS[upper-1]['name']}\n"
+            self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//8}X8 {((date_sum+self.time)//8)*8}余{lower}，下卦为{bagua.EIGHT_TRIGRAMS[lower-1]['name']}\n"
+            self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//6}X6 {((date_sum+self.time)//6)*6}余{changer}，变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"
 
         # self.__check_element_kill()
         return self.self_gua

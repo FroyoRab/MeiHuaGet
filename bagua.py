@@ -1,7 +1,7 @@
 import copy
 
 # 八卦定义
-__EIGHT_TRIGRAMS = [
+EIGHT_TRIGRAMS = [
     {"index":1, "name": "乾", "symbol": "☰", "nature": "金", "direction": "西北", "attribute": "天", "bin_str": '111'},
     {"index":2, "name": "兑", "symbol": "☱", "nature": "金", "direction": "西", "attribute": "泽", "bin_str": '110'},
     {"index":3, "name": "离", "symbol": "☲", "nature": "火", "direction": "南", "attribute": "火", "bin_str": '101'},
@@ -107,7 +107,7 @@ class Gua():
         return index
     
     def index(upper_name:str) ->int:
-        return [x['name'] for x in __EIGHT_TRIGRAMS.values()].index(upper_name)+1
+        return [x['name'] for x in EIGHT_TRIGRAMS.values()].index(upper_name)+1
     
     def change_index(self,index:int) -> str:
         """_summary_
@@ -121,7 +121,7 @@ class Gua():
         
         
         
-BAGUA = [Gua(**x) for x in __EIGHT_TRIGRAMS]
+BAGUA = [Gua(**x) for x in EIGHT_TRIGRAMS]
 
 class _Gua64():
     upper:Gua
@@ -152,8 +152,8 @@ class Gua64():
     hugua:_Gua64
     biangua:_Gua64
     change_gua_index:int
-    element_relation_index:int
-    element_relation:str
+    # element_relation_index:int
+    # element_relation:str
     
     def __init__(self,upper_index,lower_index,change_index):
         self.self_gua = _Gua64(
@@ -163,7 +163,7 @@ class Gua64():
         self.__get_hu_gua()
         if change_index:
             self.set_change_gua(change_index)
-            self.__check_element_kill()
+            # self.__check_element_kill()
     
     def set_change_gua(self,change_index):
         change_gua = None
@@ -184,14 +184,11 @@ class Gua64():
                 BAGUA[Gua.bin2hexgram(change_gua_bin)-1],
             )
         # self.__check_element_kill()
-            
-    def __check_element_kill(self):
-        lower_nature = self.self_gua.lower.nature
-        upper_nature = self.self_gua.upper.nature
-        change_yao_index = self.change_gua_index
-        
-        body_nature = lower_nature if change_yao_index <= 3 else upper_nature
-        use_nature = upper_nature if change_yao_index <= 3 else lower_nature
+
+    @staticmethod
+    def check_element_kill(upper_nature:str,lower_nature:str,change_yao_index:int):
+        use_nature,body_nature = (lower_nature,upper_nature) if change_yao_index <= 3 else (upper_nature,lower_nature)
+        # body_nature = upper_nature if change_yao_index <= 3 else lower_nature
         
         five_element_kill = '金木土水火'
         body_element = five_element_kill.index(body_nature) 
@@ -208,9 +205,12 @@ class Gua64():
             3: '用生体',
             4: '体克用',
         }
-        self.element_relation_index = value
-        self.element_relation = element_relation_dict[value]
-        return self.element_relation
+        res_str = f"变爻在{change_yao_index}，"+\
+            ("上{}下{}，" if change_yao_index<=3 else "下{}上{}，").format('体',"用")+\
+            "体为{}用为{}".format(five_element_kill[body_element],five_element_kill[use_element])+\
+            element_relation_dict[value]
+            
+        return value,res_str
             
     def __get_hu_gua(self):
         hu_upper = self.self_gua.binary_str[1:4]

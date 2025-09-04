@@ -155,111 +155,87 @@ def main(page: ft.Page):
         value='uselunar'
     )
     
-    # random_numbers_input = ft.TextField(
-    #     label="输入任意数字",
-    #     on_change=state.set_random_numbers,
-    #     visible=False,
-    #     width=400
-    # )
-    
-    # chinese_chars_input = ft.TextField(
-    #     label="输入中文字符串",
-    #     on_change=state.set_chinese_chars,
-    #     visible=False,
-    #     width=400
-    # )
-    
-    # upper_trigram_dd = ft.Dropdown(
-    #     label="上卦",
-    #     options=[ft.dropdown.Option(f"{v.name}:{v.symbol}") for v in BAGUA],
-    #     on_change=state.set_upper_trigram,
-    #     visible=False,
-    #     width=200
-    # )
-    
-    RESULT_TEXT_SIZE = 30
-    RESULT_RELEATION_SIZE = 20
-    RESULT_LITTEL_TEXT_STYLE = ft.TextStyle(size=10)
-    RESULT_SYMBOL_STYLE = ft.TextStyle(size=50,height=0.72)
-    
-    # 本卦
-    bengua_text = ft.Text(style=ft.TextStyle(size=RESULT_TEXT_SIZE))
-    
-    bengua_upper = ft.TextSpan() # 在text中设置
-    bengua_lower = ft.TextSpan()
-    bengua_upper_name = ft.TextSpan(style=RESULT_LITTEL_TEXT_STYLE)
-    bengua_lower_name = ft.TextSpan(style=RESULT_LITTEL_TEXT_STYLE)
-    
-    bengua_symbol = ft.Container(
-        content=ft.Column(
-            controls=[
-                ft.Text(spans=[bengua_upper_name,bengua_upper,],style=RESULT_SYMBOL_STYLE),
-                ft.Text(spans=[bengua_lower_name,bengua_lower,],style=RESULT_SYMBOL_STYLE),
-            ],spacing=0,expand=0
-        ),padding=0,margin=0
-    )
-    
-    bengua_element_releation = ft.Text(style=ft.TextStyle(size=RESULT_RELEATION_SIZE))
-    bengua_all = ft.Card(content=ft.Column(
-        controls=[
-            bengua_text,
-            bengua_symbol,
-            bengua_element_releation
-        ],
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        col=4
-    ))
-    
     NATURE_COLOR = {
-        '金':'yellow',
-        '木':'green',
-        '水':'blue',
-        '火':'red',
-        '土':'brown'
+        '金':ft.Colors.YELLOW_700,
+        '木':ft.Colors.GREEN,
+        '水':ft.Colors.BLUE,
+        '火':ft.Colors.RED,
+        '土':ft.Colors.BROWN
     }
     
     def calculator(data,localvar):
+        
+        # RESULT_RELEATION_SIZE = 20
+        # RESULT_LITTEL_TEXT_STYLE = ft.TextStyle(size=10)
+        # RESULT_SYMBOL_STYLE = ft.TextStyle(size=50,height=0.72)
+        # RESULT_TEXT_SIZE = 30
+        result_releation_size = 10
+        result_64gua_name_size = 30
+        result_partname_size = 10
+        result_partsymbol_size = 50
+        result_partsymbol_height = 0.720
+        
         meihuaobj = MeiHuaCalc(**state)
         res = meihuaobj.calclator()
         gua_obj_dict = {
-            'bengua':res.self_gua,
-            # 'hugua':res.hugua,
-            # 'biangua':res.biangua
+            '本卦':res.self_gua,
+            '互卦':res.hugua,
+            '变卦':res.biangua
         }
+        gua_name = ""
+        part = {
+            'upper':{},
+            "lower":{}
+        }
+        
+        res_list = []
+        
         for one_gua in gua_obj_dict.keys():
             obj = gua_obj_dict[one_gua]
-            # 设置64卦名
-            gua_name = localvar[f"{one_gua}_text"]
-            # gua_name.padding = ft.padding.all(0)
-            setattr(gua_name,'value',getattr(obj,'name'))
-            # obj_upper = getattr(obj,'upper')
-            # obj_lower = getattr(obj,'lower')
+            gua_name = obj.name
             # 设置体用相互关系
-            element = localvar[f"{one_gua}_element_releation"]
-            setattr(element,'value',getattr(res,'element_relation'))
-            for one_part_str in ['upper','lower']:
+            element_index,element_relation = res.check_element_kill(obj.upper.nature,obj.lower.nature,res.change_gua_index)
+            for one_part_str in part.keys():
                 one_part = getattr(obj,one_part_str)
-                # 设置8卦符号
-                onegua_part = localvar[f"{one_gua}_{one_part_str}"]
-                # onegua_part.padding = ft.padding.all(0)
-                setattr(onegua_part,"text",getattr(one_part,'symbol'))
-                # 设置颜色
-                setattr(onegua_part,'style',ft.TextStyle(color=NATURE_COLOR[one_part.nature]))
-                # 设置8卦名称(属性)
-                onegua_part_name = localvar[f"{one_gua}_{one_part_str}_name"]
-                # onegua_part_name.padding = ft.padding.all(0)
-                setattr(
-                    onegua_part_name,"text",
-                    f"{getattr(one_part,'name')}({getattr(one_part,'attribute')})"
+                part[one_part_str]['symbol'] = one_part.symbol
+                part[one_part_str]['color'] = NATURE_COLOR[one_part.nature]
+                part[one_part_str]['name'] = f"{one_part.name}({one_part.attribute})"
+            
+            upper = part['upper']
+            lower = part['lower']
+            gua_symbol = ft.Container(
+                content=ft.Column(
+                    controls=[
+                        ft.Text(spans=[
+                            ft.TextSpan(spans=[ # 统一颜色
+                            ft.TextSpan(text=upper['name'],style=ft.TextStyle(size=result_partname_size)),                                              # bengua_upper_name,
+                                ft.TextSpan(text=upper['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_upper
+                            ],style=ft.TextStyle(color=upper['color'])),
+                        ]),
+                        ft.Text(spans=[
+                            ft.TextSpan(spans=[ # 统一颜色故增加外包span
+                                ft.TextSpan(text=lower['name'],style=ft.TextStyle(size=result_partname_size)),                                          #bengua_lower_name,
+                                ft.TextSpan(text=lower['symbol'],style=ft.TextStyle(size=result_partsymbol_size,height=result_partsymbol_height)),      #bengua_lower
+                            ],style=ft.TextStyle(color=lower['color'])),
+                        ]),
+                    ],spacing=0,expand=0
                 )
-                # 设置颜色
-                setattr(
-                    getattr(onegua_part_name,'style'),'color',
-                    NATURE_COLOR[one_part.nature]
-                )
-        
-        # localvar[f"bengua_symbol"].value = res.self_gua.symbol
-        result_container.value = str(res)
+            )
+            gua_all = ft.Card(content=ft.Column(
+                controls=[
+                    ft.Text(value=f"{one_gua}:{gua_name}",size=result_64gua_name_size),
+                    gua_symbol,
+                    ft.Text(value=element_relation,size=result_releation_size)
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            ),col={"xs": 12, "md": 8, "lg": 4})
+            
+            res_list.append(gua_all)
+
+        result_container.controls = [
+            ft.Text(value=meihuaobj.calc_info),
+            ft.ResponsiveRow(res_list,run_spacing={'xs':8},alignment=ft.MainAxisAlignment.SPACE_AROUND)
+        ]
         result_container.visible = True
         result_container.update()
         
@@ -272,9 +248,10 @@ def main(page: ft.Page):
     )
     
     # 结果显示区域
-    result_container = ft.ResponsiveRow([
-        bengua_all,
-    ],width=1200)
+    result_container = ft.Column(
+        horizontal_alignment=ft.MainAxisAlignment.CENTER
+    ) 
+
     
     # 时间类型选择容器
     time_type_container = ft.Column([
