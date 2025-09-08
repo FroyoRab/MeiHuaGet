@@ -1,11 +1,6 @@
 import flet as ft
-import datetime
-import re
-from zhdate import ZhDate
-from datetime import datetime
 from meihua import MeiHuaCalc,DIZHI12
-from bagua import BAGUA,GUA_MEAN
-import functools
+from bagua import GUA_MEAN
 
 # 可选输入项
 INPUT_METHOD = [
