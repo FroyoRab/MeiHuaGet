@@ -26,7 +26,9 @@ class MeiHuaCalc():
     uselunar:bool
     
     # random number
-    number:int = -1
+    number1:int = -1
+    number2:int = -1
+    number3:int = -1
     
     # chinese char
     ch_char:str = ""
@@ -43,7 +45,7 @@ class MeiHuaCalc():
             self.__datetime_init__(**kwargs)
             self.calc_type = 0
             
-        if 'number' in arg_keys:
+        if 'number1' and 'number2' in arg_keys:
             self.__random_num_init__(**kwargs)
             self.calc_type = 1
             if 'time' in arg_keys:
@@ -95,14 +97,13 @@ class MeiHuaCalc():
                 self.year,self.month,self.day = [int(x) for x in date.split("-")]
             else:ValueError(f"给到的date不是合法数值(%Y-%m-%d),或逻辑错误。")
         
-    def __random_num_init__(self,num:str,useNumberValue:bool=True):
-        if useNumberValue:
-            if num.isalnum():
-                self.number = int(num)
-            else:
-                raise ValueError("提供的数字非法")
-        else:
-            self.number = sum(list(num))
+    def __random_num_init__(self,number1:str,number2:str,number3:str=None,useNumberValue:bool=True):
+        self.number1 = int(number1)
+        self.number2 = int(number2)
+        if number3.isalnum():
+            self.number3 = int(number3)
+        else: self.number3 = number3 # make none
+            
         
     def __time_init__(self,time:str,islunartime:bool,uselunar:bool):
         if uselunar:
@@ -158,8 +159,8 @@ class MeiHuaCalc():
             raise ValueError(f"计算方式未成功设置")
         calc_check_dict = [
             [self.time, self.day, self.month, self.year],   # 0 - datetime
-            [self.number,],                               # 1 - number
-            [self.number, self.time],                     # 2 - number and time
+            [self.number1,self.number2],       # 1 - number
+            [self.number1, self.time],                     # 2 - number and time
             [self.ch_char,],                              # 3 - chinese char
             [self.upper_index, self.time],                # 4 - upper hexgram and time
         ]
@@ -180,6 +181,23 @@ class MeiHuaCalc():
             self.calc_info += f"年月日和{date_sum}，{date_sum//8}X8 {(date_sum//8)*8}余{upper}，上卦为{bagua.EIGHT_TRIGRAMS[upper-1]['name']}\n"
             self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//8}X8 {((date_sum+self.time)//8)*8}余{lower}，下卦为{bagua.EIGHT_TRIGRAMS[lower-1]['name']}\n"
             self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//6}X6 {((date_sum+self.time)//6)*6}余{changer}，变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"
+
+        if self.calc_type == 1:
+            upper = self.number1 % 8 or 8
+            lower = self.number2 % 8 or 8
+            self.calc_info = f"数{self.number1}为上卦，对8取余，{self.number1//8}X8 {(self.number1//8)*8}余{upper}\n"
+            self.calc_info += f"数{self.number2}为下卦，对8取余，{self.number2//8}X8 {(self.number2//8)*8}余{lower}\n"
+            
+            if self.number3:
+                changer = self.number3 % 6 or 6
+                self.calc_info += f"数{self.number3}为变爻，对6取余，{self.number3//6}X6 {(self.number3//6)*6}余{changer}"
+            else:
+                changer = (upper + lower) % 6 or 6
+                self.calc_info += f"数1+数2相加为{(upper + lower)}，对6取余，{(upper + lower)//6}X6 {((upper + lower)//6)*6}余{changer}"
+            self.self_gua = bagua.Gua64(upper,lower,changer)
+            
+            
+
 
         # self.__check_element_kill()
         return self.self_gua

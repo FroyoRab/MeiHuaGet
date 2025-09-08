@@ -59,14 +59,23 @@ def main(page: ft.Page):
         width=400
     )
     
-    def number_input(data:ft.ControlEvent):
+    def number_input(data:ft.ControlEvent,index:int):
         state.update({
-            'number':data.value
+            f'number{index}':data.data,
         })
         
-    random_numbers_input = ft.TextField(
-        on_change=number_input
-    )
+    random_numbers_input =ft.Column(controls=[
+            ft.TextField(
+                on_change=lambda x:number_input(x,1)
+            ),
+            ft.TextField(
+                on_change=lambda x:number_input(x,2)
+            ),
+            ft.TextField(
+                label="可选，直接作为动爻",
+                on_change=lambda x:number_input(x,3)
+            ),
+        ],visible=False,width=400)
     
     def date_select(date:ft.ControlEvent):
         date_str = date.control.value.strftime("%Y-%m-%d")
