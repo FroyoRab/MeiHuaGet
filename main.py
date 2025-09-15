@@ -22,7 +22,7 @@ def main(page: ft.Page):
         select_input_dict = {
             'datetime':[lunar_date_input,time_type_container,select_date_show,is_use_lunar_datetime,isgive_luan_date],
             'random_number':[random_numbers_input,],
-            'number_with_time':[],
+            'number_with_time':[number_time_input,time_type_container],
             'chinese_chars':[],
             'upper_hexgram_with_time':[]
         }
@@ -33,16 +33,19 @@ def main(page: ft.Page):
         dicts = [select_input_dict,select_time_type]
         
         use_dict = [x for x in dicts if select.data in x][0]
+        # visible false
+        [[setattr(y,'visible',False) for y in x] for x in use_dict.values()]
+        
         if select.data in use_dict:
             for one in use_dict.keys():
                 if one == select.data:
                     for one_element in use_dict[one]:
                         one_element.visible = True
                         state.clear()
-                else:
-                    for one_element in use_dict[one]:
-                        one_element.visible = False
-                        state.clear()
+                # else:
+                #     for one_element in use_dict[one]:
+                #         one_element.visible = False
+                #         state.clear()
         page.update()
         
     # 输入控件
@@ -54,23 +57,28 @@ def main(page: ft.Page):
         width=400
     )
     
+    
     def number_input(data:ft.ControlEvent,index:int):
         state.update({
             f'number{index}':data.data,
         })
         
-    random_numbers_input =ft.Column(controls=[
-            ft.TextField(
-                on_change=lambda x:number_input(x,1)
-            ),
-            ft.TextField(
-                on_change=lambda x:number_input(x,2)
-            ),
-            ft.TextField(
-                label="可选，直接作为动爻",
-                on_change=lambda x:number_input(x,3)
-            ),
-        ],visible=False,width=400)
+    random_numbers_input = ft.Container(content=
+        ft.Column(controls=[
+                ft.TextField(
+                    label = "输入第一个数",
+                    on_change=lambda x:number_input(x,1),
+                ),
+                ft.TextField(
+                    label = "输入第二个数",
+                    on_change=lambda x:number_input(x,2)
+                ),
+                ft.TextField(
+                    label="可选输入，直接作为动爻",
+                    on_change=lambda x:number_input(x,3)
+                ),
+            ]),visible=False,width=400
+    )
     
     def date_select(date:ft.ControlEvent):
         date_str = date.control.value.strftime("%Y-%m-%d")
@@ -158,6 +166,15 @@ def main(page: ft.Page):
         width=200
     )
     
+    # 时间类型选择容器
+    time_type_container = ft.Column([
+        ft.Text("时间输入方式:"),
+        time_type_radio,
+        ft.Row([time_input_24, time_input_dizhi],col=4)
+    ], visible=True,width=400)
+    
+    
+    
     is_use_lunar_datetime = ft.RadioGroup(
         content=ft.Row([
             ft.Radio(
@@ -174,7 +191,14 @@ def main(page: ft.Page):
         value='uselunar'
     )
     
-    
+    number_time_input = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.TextField(on_change=lambda x:number_input(x,1),label='输入数字'),
+                # time_type_container
+            ]
+        ),visible=False,width=400
+    )
     
     NATURE_COLOR = {
         '金':ft.Colors.YELLOW_700,
@@ -348,26 +372,27 @@ def main(page: ft.Page):
     )
 
     
-    # 时间类型选择容器
-    time_type_container = ft.Column([
-        ft.Text("时间输入方式:"),
-        time_type_radio,
-        ft.Row([time_input_24, time_input_dizhi],col=4)
-    ], visible=True,width=400)
-    
     # 主界面布局
     page.add(
         ft.Column([
             ft.Text("梅花易数排盘工具", size=24, weight=ft.FontWeight.BOLD),
-            isgive_luan_date,
             input_method_dd,
+            ft.Divider(),
+            isgive_luan_date,
             lunar_date_input,
             random_numbers_input,
+            number_time_input,
             # chinese_chars_input,
             # ft.Row([upper_trigram_dd], visible=False),
             time_type_container,
             is_use_lunar_datetime,
+            ft.Divider(),
             calculate_btn,
+        ], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.CENTER,width=400)
+    )
+    # 结果布局
+    page.add(
+        ft.Column([
             result_container,
             result_mean_container,
         ], spacing=0, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
@@ -378,4 +403,4 @@ def main(page: ft.Page):
     # update_input_visibility()
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.app(target=main,assets_dir='assets')

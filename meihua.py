@@ -45,11 +45,12 @@ class MeiHuaCalc():
             self.__datetime_init__(**kwargs)
             self.calc_type = 0
             
-        if 'number1' and 'number2' in arg_keys:
-            self.__random_num_init__(**kwargs)
-            self.calc_type = 1
+        if 'number1' in arg_keys:
+            if 'number2' in arg_keys:
+                self.__random_num_init__(**kwargs)
+                self.calc_type = 1
             if 'time' in arg_keys:
-                self.__time_init__(**kwargs)
+                self.__number_time_init__(**kwargs)
                 self.calc_type = 2
         
         if 'chinesechar' in arg_keys:
@@ -58,7 +59,7 @@ class MeiHuaCalc():
         
         if 'upper_hexgram' in arg_keys:
             self.__upper_hexgram_init__(**kwargs)
-            self.__time_init__(**kwargs)    
+            self.__number_time_init__(**kwargs)    
         
         
     @staticmethod
@@ -73,7 +74,7 @@ class MeiHuaCalc():
             lunadate (str): "%Y-%m-%d"
             lunatime (str): 12:12 | 子丑寅卯辰巳午未申酉戌亥
         """
-        self.__time_init__(time,islunardate,uselunar)
+        self.__number_time_init__(time,islunardate,uselunar)
         self.uselunar = uselunar
         if uselunar:
             lunar_date = None
@@ -105,30 +106,19 @@ class MeiHuaCalc():
         else: self.number3 = number3 # make none
             
         
-    def __time_init__(self,time:str,islunartime:bool,uselunar:bool):
-        if uselunar:
-            # 如果直接是地支就返回数值
-            if islunartime:
-                if time in DIZHI12:
-                    self.time = DIZHI12.index(time)+1
-                    return
-                else: raise ValueError(f'给到的不是地支{time}')
-            # 其他进行分割取小时
-            if time in DIZHI12:
-                self.time = DIZHI12.index(time)+1
-                return
-            if ":" in time :
-                time = time.split(":")[0]
-            if time.isalnum():
-                hour = int(time)
-            else: raise ValueError(f"给到的time不是合法数值{time}")                
-            # 返回地支的数值
-            self.time = MeiHuaCalc.time2lunatime(hour)
-        else:
-            # 不用地支则将所有数值相加
-            if type(time)==str and ':' in time:
-                self.time = sum([int(x) for x in time.split(':')])
-            else: raise ValueError(f"给到的time不是合法数值{time}")
+    def __number_time_init__(self,number1:str,time:str):
+        self.number1 = int(number1)
+        if time in DIZHI12:
+            self.time = DIZHI12.index(time)+1
+            return
+        # 其他进行分割取小时
+        if ":" in time :
+            time = time.split(":")[0]
+        if time.isalnum():
+            hour = int(time)
+        else: raise ValueError(f"给到的time不是合法数值{time}")                
+        self.time = MeiHuaCalc.time2lunatime(hour)
+        # 返回地支的数值
             
     def __chinese_char_init__(self,ch_char:str):
         self.ch_char = ch_char
@@ -173,14 +163,14 @@ class MeiHuaCalc():
             upper = date_sum % 8 or 8
             lower = (date_sum + self.time) % 8 or 8
             changer = (date_sum + self.time) % 6 or 6
-            self.self_gua = bagua.Gua64(upper,lower,changer)
+            # self.self_gua = bagua.Gua64(upper,lower,changer)
             if self.uselunar:
                 self.calc_info = f"{TIANGAN10[self.year-1]}年({self.year})，{DIZHI12[self.month-1]}月({self.month})，{self.day}日，{DIZHI12[self.time-1]}时({self.time})\n"
             else:
                 self.calc_info = f"{self.year}年{self.month}月{self.day}日\n"
             self.calc_info += f"年月日和{date_sum}，{date_sum//8}X8 {(date_sum//8)*8}余{upper}，上卦为{bagua.EIGHT_TRIGRAMS[upper-1]['name']}\n"
             self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//8}X8 {((date_sum+self.time)//8)*8}余{lower}，下卦为{bagua.EIGHT_TRIGRAMS[lower-1]['name']}\n"
-            self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//6}X6 {((date_sum+self.time)//6)*6}余{changer}，变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"
+            self.calc_info += f"年月日时和{date_sum+self.time}，{(date_sum+self.time)//6}X6 {((date_sum+self.time)//6)*6}余{changer}"
 
         if self.calc_type == 1:
             upper = self.number1 % 8 or 8
@@ -194,7 +184,23 @@ class MeiHuaCalc():
             else:
                 changer = (upper + lower) % 6 or 6
                 self.calc_info += f"数1+数2相加为{(upper + lower)}，对6取余，{(upper + lower)//6}X6 {((upper + lower)//6)*6}余{changer}"
-            self.self_gua = bagua.Gua64(upper,lower,changer)
+            # self.calc_info += f"变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"
+            # self.self_gua = bagua.Gua64(upper,lower,changer)
+        
+        if self.calc_type == 2:
+            upper = self.number1 % 8 or 8
+            self.calc_info = f"数{self.number1}为上卦，对8取余，{self.number1//8}X8 {(self.number1//8)*8}余{upper}\n"
+            
+            lower = self.time % 8 or 8
+            self.calc_info += f"{DIZHI12[self.time-1]}时({self.time})为上卦，对8取余，{self.number1//8}X8 {(self.number1//8)*8}余{upper}\n"
+            
+            changer = (self.number1 + self.time) % 6 or 6
+            self.calc_info += f"数{self.number1}和{DIZHI12[self.time-1]}时({self.time})总数{(self.number1 + self.time)}，对86取余，{(self.number1 + self.time)//6}X6 {((self.number1 + self.time)//6)*6}余{changer}\n"
+            
+        self.calc_info += f"变爻为{['初','第二','第三','第四','第五','上'][changer-1]}爻"
+            
+        self.self_gua = bagua.Gua64(upper,lower,changer)
+            
             
             
 

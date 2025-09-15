@@ -19,10 +19,10 @@
             "program": "${command:python.interpreterPath}/../flet.exe",
             "args": [
                 "run",
-                "-d",
+                // "-d",
                 "--web",
                 "--port",
-                "8000",
+                "8100",
                 "main.py"
             ],
             "autoReload": {
