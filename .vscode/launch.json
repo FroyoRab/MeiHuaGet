@@ -5,34 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python 调试程序: get_zhouyi",
+            "name": "Python 调试程序: main",
             "type": "debugpy",
             "request": "launch",
-            "program": "get_zhouyi_cc.py",
+            "program": "main.py",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/get_zhouyi_cc/"
-        },
-        {
-            "name": "Python 调试程序: flet",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${command:python.interpreterPath}/../flet.exe",
-            "args": [
-                "run",
-                // "-d",
-                "--web",
-                "--port",
-                "8100",
-                "main.py"
-            ],
-            // "args": [
-            //     "publish",
-            //     "main.py"
-            // ],
-            "autoReload": {
-                "enable": true
-            },
             "justMyCode": false
-        }
+        },
     ]
 }
