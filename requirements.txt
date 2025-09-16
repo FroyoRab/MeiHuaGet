@@ -3,3 +3,4 @@ flet-cli
 flet-runtime
 flet-web
 zhdate
+watchdog
