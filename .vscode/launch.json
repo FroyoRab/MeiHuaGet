@@ -25,6 +25,10 @@
                 "8100",
                 "main.py"
             ],
+            // "args": [
+            //     "publish",
+            //     "main.py"
+            // ],
             "autoReload": {
                 "enable": true
             },
