@@ -1,5 +1,2 @@
-flet
-flet-cli
-flet-runtime
-flet-web
+flet[all]
 zhdate
