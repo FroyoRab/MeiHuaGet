@@ -1,6 +1,6 @@
 watchdog == 4.0.0
 flet == 0.28.3
-flet-cli
+# flet-cli
 flet-runtime
 flet-web
 zhdate
