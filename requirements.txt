@@ -1,5 +1,5 @@
 flet == 0.28.3
 # flet-cli
 flet-runtime
-flet-web
+# flet-web
 zhdate
