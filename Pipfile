@@ -5,7 +5,7 @@ name = "pip_conf_index_global"
 
 [packages]
 zhdate = "*"
-flet = {extras = ["all"], version = "*"}
+flet = {extras = ["all"], version = "==0.28.3"}
 
 [dev-packages]
 

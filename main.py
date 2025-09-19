@@ -11,8 +11,15 @@ INPUT_METHOD = [
     {"key":"upper_hexgram_with_time","text":"上卦+时间"},
 ]
 
+class DateTimeCalc(ft.Column):
+    def __init__(self, controls = None, alignment = None, horizontal_alignment = None, spacing = None, tight = None, wrap = None, run_spacing = None, run_alignment = None, ref = None, key = None, width = None, height = None, left = None, top = None, right = None, bottom = None, expand = None, expand_loose = None, col = None, opacity = None, rotate = None, scale = None, offset = None, aspect_ratio = None, animate_opacity = None, animate_size = None, animate_position = None, animate_rotation = None, animate_scale = None, animate_offset = None, on_animation_end = None, visible = None, disabled = None, data = None, rtl = None, scroll = None, auto_scroll = None, on_scroll_interval = None, on_scroll = None, adaptive = None):
+        super().__init__(controls, alignment, horizontal_alignment, spacing, tight, wrap, run_spacing, run_alignment, ref, key, width, height, left, top, right, bottom, expand, expand_loose, col, opacity, rotate, scale, offset, aspect_ratio, animate_opacity, animate_size, animate_position, animate_rotation, animate_scale, animate_offset, on_animation_end, visible, disabled, data, rtl, scroll, auto_scroll, on_scroll_interval, on_scroll, adaptive)
+    
+    
+
+
 def main(page: ft.Page):
-    page.title = "梅花易数排盘"
+    page.title = "排个好的"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.scroll = ft.ScrollMode.AUTO
     page.adaptive = True
@@ -57,10 +64,9 @@ def main(page: ft.Page):
         width=400
     )
     
-    
     def number_input(data:ft.ControlEvent,index:int):
         state.update({
-            f'number{index}':data.data,
+            f'number{index}':data.control.value,
         })
         
     random_numbers_input = ft.Container(content=
@@ -403,4 +409,11 @@ def main(page: ft.Page):
     # update_input_visibility()
 
 if __name__ == "__main__":
-    ft.app(target=main,assets_dir='assets',view=ft.AppView.WEB_BROWSER)
+    ft.app(
+        target=main,
+        # name='来盘梅花',
+        assets_dir='assets',
+        view=ft.AppView.WEB_BROWSER,
+        port=65320,
+        # host='0.0.0.0'
+    )
