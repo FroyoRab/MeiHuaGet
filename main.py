@@ -400,7 +400,7 @@ class MeiHuaApp:
 
 async def main(page: ft.Page):
     MeiHuaApp(page)
-    await page.update()
+    page.update()
 
 
 if __name__ == "__main__":
