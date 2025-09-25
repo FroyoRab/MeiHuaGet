@@ -8,58 +8,38 @@ TIANGAN10 = "甲乙丙丁戊己庚辛壬癸"
 
 
 class MeiHuaCalc():
-    self_gua:bagua.Gua64 = None
-    calc_info:str = ""
-    
-    calc_type = -1
-    # 0 - datetime
-    # 1 - number
-    # 2 - number and time
-    # 3 - chinese char
-    # 4 - upper hexgram and time
-    
-    # datetime
-    time:int = -1
-    year:int = -1
-    month:int = -1
-    day:int = -1
-    uselunar:bool
-    
-    # random number
-    number1:int = -1
-    number2:int = -1
-    number3:int = -1
-    
-    # chinese char
-    ch_char:str = ""
-    
-    # upper hexgram index (从1计数)
-    upper_index:int = -1
-    
-    # tiyong
-    
-    
-    def __init__(self,*args, **kwargs):
-        arg_keys = kwargs.keys()
-        if 'date' in arg_keys: 
-            self.__datetime_init__(**kwargs)
-            self.calc_type = 0
-            
-        if 'number1' in arg_keys:
-            if 'number2' in arg_keys:
-                self.__random_num_init__(**kwargs)
-                self.calc_type = 1
-            if 'time' in arg_keys:
-                self.__number_time_init__(**kwargs)
-                self.calc_type = 2
-        
-        if 'chinesechar' in arg_keys:
-            self.__chinese_char_init__(**kwargs)
-            self.calc_type = 3
-        
-        if 'upper_hexgram' in arg_keys:
-            self.__upper_hexgram_init__(**kwargs)
-            self.__number_time_init__(**kwargs)    
+
+    def __init__(self, *_, **kwargs):
+        self.self_gua: bagua.Gua64 | None = None
+        self.calc_info: str = ""
+
+        # 0 - datetime
+        # 1 - number
+        # 2 - number and time
+        # 3 - chinese char
+        # 4 - upper hexgram and time
+        self.calc_type: int = -1
+
+        # datetime related
+        self.time: int = -1
+        self.year: int = -1
+        self.month: int = -1
+        self.day: int = -1
+        self.uselunar: bool = True
+
+        # random number inputs
+        self.number1: int = -1
+        self.number2: int = -1
+        self.number3: int | None = None
+
+        # chinese char
+        self.ch_char: str = ""
+
+        # upper hexgram index (从1计数)
+        self.upper_index: int = -1
+
+        if kwargs:
+            self._initialize_from_kwargs(**kwargs)
         
         
     @staticmethod
@@ -67,64 +47,102 @@ class MeiHuaCalc():
         index = (hour + 1) // 2
         return (index % 12) + 1
             
-    def __datetime_init__(self,date,time,islunardate:bool=False,uselunar:bool=True):
-        """_summary_
+    def _initialize_from_kwargs(self, **kwargs):
+        keys = set(kwargs.keys())
 
-        Args:
-            lunadate (str): "%Y-%m-%d"
-            lunatime (str): 12:12 | 子丑寅卯辰巳午未申酉戌亥
-        """
-        self.__number_time_init__(time,islunardate,uselunar)
-        self.uselunar = uselunar
-        if uselunar:
-            lunar_date = None
-            if islunardate :
-                if type(date)==ZhDate:
-                    lunar_date = date
-                if type(date) == str and '-' in date:
-                    year,mouth,day = date.split("-")
-                    lunar_date = ZhDate(int(year),int(mouth),int(day))
-            elif not islunardate and type(date) == str and '-' in date:
-                year,month,day = date.split("-")
-                lunar_date = ZhDate.from_datetime(datetime(int(year),int(month),int(day)))
+        if 'upper_hexgram' in keys:
+            self.calc_type = 4
+            self.upper_index = bagua.Gua.index(kwargs['upper_hexgram'])
+            self.time = self._parse_time_value(kwargs.get('time'))
+            return
+
+        if 'date' in keys:
+            self.calc_type = 0
+            self._initialize_from_date(kwargs)
+            return
+
+        if 'number1' in keys and 'time' in keys:
+            self.calc_type = 2
+            self.number1 = int(kwargs['number1'])
+            self.time = self._parse_time_value(kwargs['time'])
+            if 'number2' in keys:
+                self.number2 = int(kwargs['number2'])
+            if 'number3' in keys and kwargs['number3'] is not None:
+                raw_value = kwargs['number3']
+                value_str = str(raw_value)
+                self.number3 = int(raw_value) if value_str.lstrip('-').isdigit() else raw_value
+            return
+
+        if 'number1' in keys and 'number2' in keys:
+            self.calc_type = 1
+            self.number1 = int(kwargs['number1'])
+            self.number2 = int(kwargs['number2'])
+            number3 = kwargs.get('number3')
+            if number3 is not None:
+                number3_str = str(number3)
+                self.number3 = int(number3) if number3_str.lstrip('-').isdigit() else number3
             else:
-                raise ValueError(f"给到的date不是合法数值(Zhdate or %Y-%m-%d),或逻辑错误。")
+                self.number3 = None
+            return
+
+        if 'chinesechar' in keys:
+            self.calc_type = 3
+            self.ch_char = kwargs['chinesechar']
+            return
+
+    def _initialize_from_date(self, kwargs):
+        date = kwargs['date']
+        time_value = kwargs.get('time')
+        if time_value is None:
+            raise ValueError("未提供时间信息，无法计算")
+
+        self.time = self._parse_time_value(time_value)
+        self.uselunar = kwargs.get('uselunar', True)
+        is_lunar_date = kwargs.get('islunardate', False)
+
+        if self.uselunar:
+            lunar_date = None
+            if is_lunar_date:
+                if isinstance(date, ZhDate):
+                    lunar_date = date
+                elif isinstance(date, str) and '-' in date:
+                    year, month, day = date.split("-")
+                    lunar_date = ZhDate(int(year), int(month), int(day))
+            elif isinstance(date, str) and '-' in date:
+                year, month, day = date.split("-")
+                lunar_date = ZhDate.from_datetime(datetime(int(year), int(month), int(day)))
+
+            if lunar_date is None:
+                raise ValueError("给到的date不是合法数值(ZhDate 或 %Y-%m-%d)，或逻辑错误。")
 
             self.day = lunar_date.lunar_day
             self.month = lunar_date.lunar_month
             self.year = (lunar_date.lunar_year - 1996 + 36) % 12
         else:
-            if type(date)==str and '-' in date:
-                self.year,self.month,self.day = [int(x) for x in date.split("-")]
-            else:ValueError(f"给到的date不是合法数值(%Y-%m-%d),或逻辑错误。")
-        
-    def __random_num_init__(self,number1:str,number2:str,number3:str=None,useNumberValue:bool=True):
-        self.number1 = int(number1)
-        self.number2 = int(number2)
-        if number3.isalnum():
-            self.number3 = int(number3)
-        else: self.number3 = number3 # make none
-            
-        
-    def __number_time_init__(self,number1:str,time:str):
-        self.number1 = int(number1)
-        if time in DIZHI12:
-            self.time = DIZHI12.index(time)+1
-            return
-        # 其他进行分割取小时
-        if ":" in time :
-            time = time.split(":")[0]
-        if time.isalnum():
-            hour = int(time)
-        else: raise ValueError(f"给到的time不是合法数值{time}")                
-        self.time = MeiHuaCalc.time2lunatime(hour)
-        # 返回地支的数值
-            
-    def __chinese_char_init__(self,ch_char:str):
-        self.ch_char = ch_char
-        
-    def __upper_hexgram_init__(self,upper_hexgram:str):
-        self.upper_index = bagua.Gua.index(upper_hexgram)
+            if isinstance(date, str) and '-' in date:
+                self.year, self.month, self.day = [int(x) for x in date.split("-")]
+            else:
+                raise ValueError("给到的date不是合法数值(%Y-%m-%d)，或逻辑错误。")
+
+    def _parse_time_value(self, time_value):
+        if time_value is None:
+            raise ValueError("未提供时间信息，无法计算")
+
+        if isinstance(time_value, int):
+            hour = time_value
+        else:
+            time_str = str(time_value)
+            if time_str in DIZHI12:
+                return DIZHI12.index(time_str) + 1
+            if time_str and time_str[0] in DIZHI12:
+                return DIZHI12.index(time_str[0]) + 1
+            if ":" in time_str:
+                time_str = time_str.split(":")[0]
+            if time_str.isdigit():
+                hour = int(time_str)
+            else:
+                raise ValueError(f"给到的time不是合法数值{time_value}")
+        return MeiHuaCalc.time2lunatime(hour)
     
     @staticmethod
     def get_like(index:int=None,bin_str:str=None):
