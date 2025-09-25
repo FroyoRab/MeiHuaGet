@@ -1,6 +1,7 @@
 import flet as ft
 from meihua import MeiHuaCalc, DIZHI12
 from bagua import GUA_MEAN
+import datetime
 
 
 # 可选输入项
@@ -113,7 +114,7 @@ class InputSection(ft.Column):
                 ft.ElevatedButton(
                     "选择日期",
                     icon=ft.Icons.CALENDAR_MONTH,
-                    on_click=lambda _: self.page.open(ft.DatePicker(on_change=date_select)),
+                    on_click=lambda _: self.page.open(ft.DatePicker(on_change=date_select,current_date=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))))),
                 ),
                 self.select_date_show,
             ],
