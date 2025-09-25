@@ -398,8 +398,9 @@ class MeiHuaApp:
         self.result_section.show_results(meihuaobj, result)
 
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     MeiHuaApp(page)
+    await page.update()
 
 
 if __name__ == "__main__":
